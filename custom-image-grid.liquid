@@ -1,0 +1,145 @@
+{% schema %}
+{
+  "name": "Custom Image Grid Layout",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading_text",
+      "label": "Heading Text",
+      "default": "Share your setup with #Funitura_Furniture"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading Color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "heading_font_size",
+      "label": "Heading Font Size",
+      "default": 24,
+      "min": 16,
+      "max": 48,
+      "step": 1
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Image Block",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "alt_text",
+          "label": "Alt Text",
+          "default": "Masonry Image"
+        },
+        {
+          "type": "number",
+          "id": "span",
+          "label": "Vertical Span (Grid Row Span)",
+          "default": 1
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Image Grid Layout",
+      "category": "Custom Sections"
+    }
+  ]
+}
+{% endschema %}
+
+<div class="custom-image-grid-section">
+  <!-- Heading Section -->
+  <h2 class="custom-heading" style="color: {{ settings.heading_color }}; font-size: {{ settings.heading_font_size }}px;">
+    {{ settings.heading_text }}
+  </h2>
+
+  <!-- Masonry Grid -->
+  <div class="masonry-grid">
+    {% for block in section.blocks %}
+      <div class="masonry-item" style="--span: {{ block.settings.span }};">
+        {% if block.settings.image %}
+          <img 
+            src="{{ block.settings.image | img_url: '800x800' }}" 
+            alt="{{ block.settings.alt_text | escape }}" 
+            class="masonry-image"
+          >
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<style>
+  /* Section Styling */
+  .custom-image-grid-section {
+    margin: 20px;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .custom-heading {
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+
+  /* Masonry Grid Styling */
+  .masonry-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Responsive columns */
+    gap: 15px; /* Spacing between items */
+    grid-auto-rows: 10px; /* Smaller unit for fractional spans */
+  }
+
+  .masonry-item {
+    overflow: hidden;
+    border-radius: 8px;
+    grid-row: span calc(var(--span) * 2); /* Adjust span for fractional values */
+    transition: transform 0.3s ease;
+  }
+
+  .masonry-item:hover {
+    transform: scale(1.05); /* Zoom effect on hover */
+  }
+
+  .masonry-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+
+  /* Media Queries for Responsive Columns */
+  @media (max-width: 767px) {
+    .masonry-grid {
+      grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const masonryGrid = document.querySelector(".masonry-grid");
+    const masonryItems = masonryGrid.querySelectorAll(".masonry-item");
+
+    const adjustMasonryLayout = () => {
+      const gridRowHeight = parseInt(window.getComputedStyle(masonryGrid).getPropertyValue("grid-auto-rows"));
+      masonryItems.forEach((item) => {
+        const span = parseFloat(item.style.getPropertyValue("--span")) || 1;
+        item.style.gridRowEnd = `span ${Math.ceil(span * 2)}`; // Double the span for smaller grid-auto-rows
+      });
+    };
+
+    adjustMasonryLayout();
+    window.addEventListener("resize", adjustMasonryLayout);
+  });
+</script>
